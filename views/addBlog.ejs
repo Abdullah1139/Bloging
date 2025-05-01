@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%- include('./partials/head') %>
+    <title>Add New Blog</title>
+    <style>
+        .form-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            background-color: #fff;
+        }
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        textarea {
+            min-height: 200px;
+        }
+        .preview-image {
+            max-width: 100%;
+            max-height: 300px;
+            margin-top: 10px;
+            border-radius: 5px;
+            display: none;
+        }
+        .char-count {
+            font-size: 0.8rem;
+            color: #6c757d;
+            text-align: right;
+        }
+        .file-input-label {
+            display: block;
+            padding: 6px 12px;
+            background-color: #e9ecef;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .file-input-label:hover {
+            background-color: #dee2e6;
+        }
+        .file-name {
+            margin-left: 10px;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body class="bg-light">
+    <%- include('./partials/header') %>
+    
+    <div class="container my-5">
+        <div class="form-container">
+            <h2 class="text-center mb-4">Add New Blog Post</h2>
+            <form action="/blog/addBlog" method="POST" id="blogForm" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label for="title" class="form-label">Title:</label>
+                    <input type="text" class="form-control" id="title" name="title" required 
+                           placeholder="Enter blog title">
+                </div>
+                
+                <div class="form-group">
+                    <label for="body" class="form-label">Content:</label>
+                    <textarea class="form-control" id="body" name="body" required 
+                              placeholder="Write your blog content here"></textarea>
+                    <div id="bodyCharCount" class="char-count">0 characters</div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="coverImage" class="form-label">Blog Cover Image:</label>
+                    <div class="input-group">
+                        <label for="coverImage" class="file-input-label">
+                            <i class="fas fa-upload"></i> Choose File
+                            <span id="fileName" class="file-name">No file chosen</span>
+                        </label>
+                        <input type="file" class="form-control d-none" id="coverImage" name="coverImage" required 
+                               accept="image/*">
+                    </div>
+                    <small class="text-muted">Image will be uploaded and stored as a URL</small>
+                    <div class="mt-2">
+                        <button type="button" class="btn btn-outline-secondary btn-sm" id="previewBtn">
+                            <i class="fas fa-eye"></i> Preview Image
+                        </button>
+                    </div>
+                    <img id="imagePreview" class="preview-image" alt="Image preview">
+                </div>
+                
+                <!-- Hidden field for createdBy (would typically be set server-side) -->
+                <input type="hidden" name="createdBy" value="<%= user._id %>">
+                
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                    <button type="reset" class="btn btn-outline-danger me-md-2" id="resetBtn">
+                        <i class="fas fa-trash-alt"></i> Clear Form
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-paper-plane"></i> Submit Blog
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+      
+    <%- include('./partials/scripts') %>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Character count for body content
+            const bodyTextarea = document.getElementById('body');
+            const charCount = document.getElementById('bodyCharCount');
+            
+            bodyTextarea.addEventListener('input', function() {
+                charCount.textContent = this.value.length + ' characters';
+            });
+            
+            // File input handling
+            const fileInput = document.getElementById('coverImage');
+            const fileNameSpan = document.getElementById('fileName');
+            const previewBtn = document.getElementById('previewBtn');
+            const imagePreview = document.getElementById('imagePreview');
+            const resetBtn = document.getElementById('resetBtn');
+            
+            fileInput.addEventListener('change', function() {
+                if (this.files.length > 0) {
+                    fileNameSpan.textContent = this.files[0].name;
+                    
+                    // Auto-preview when file is selected
+                    previewImage(this.files[0]);
+                } else {
+                    fileNameSpan.textContent = 'No file chosen';
+                    imagePreview.style.display = 'none';
+                }
+            });
+            
+            // Preview button functionality
+            previewBtn.addEventListener('click', function() {
+                if (fileInput.files.length > 0) {
+                    previewImage(fileInput.files[0]);
+                } else {
+                    alert('Please select an image file first');
+                }
+            });
+            
+            // Function to preview the image
+            function previewImage(file) {
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    imagePreview.src = e.target.result;
+                    imagePreview.style.display = 'block';
+                }
+                
+                reader.readAsDataURL(file);
+            }
+            
+            // Reset button handling
+            resetBtn.addEventListener('click', function() {
+                fileNameSpan.textContent = 'No file chosen';
+                imagePreview.style.display = 'none';
+            });
+            
+            // Form submission feedback
+            const blogForm = document.getElementById('blogForm');
+            
+            blogForm.addEventListener('submit', function(e) {
+                // You could add additional validation here
+                console.log('Form submitted');
+                // In a real application, you might show a loading spinner here
+            });
+            
+            // Auto-focus the title field when page loads
+            document.getElementById('title').focus();
+        });
+    </script>
+</body>
+</html>

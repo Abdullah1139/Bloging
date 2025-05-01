@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%- include('./partials/head') %>
+    <title>Blog It - Home</title>
+
+    
+  <style>
+        .blog-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            margin-bottom: 25px;
+            height: 100%;
+        }
+        .blog-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        .card-img-top {
+            height: 200px;
+            object-fit: cover;
+        }
+        .truncate-text {
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .author-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+        }
+        .welcome-banner {
+            background: linear-gradient(135deg, #6e8efb, #a777e3);
+            color: white;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border-radius: 10px;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 5rem;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+        .empty-state i {
+            font-size: 5rem;
+            color: #6c757d;
+            margin-bottom: 1rem;
+        }
+        .card-text {
+    white-space: pre-line; /* Preserves line breaks from textarea */
+}
+
+.truncate-text {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    max-height: 4.5em; /* Approximately 3 lines of text */
+}
+    </style>
+</head>
+<body class="bg-light">
+    <%- include('./partials/header') %>
+    
+    <div class="container mt-5">
+        <% if (locals.user) { %>
+            <div class="welcome-banner">
+                <h2>Welcome back, <%= locals.user.name %>!</h2>
+                <p class="lead">Check out the latest blog posts from our community</p>
+                <a href="/blog/addNew" class="btn btn-light">Create New Blog</a>
+            </div>
+        <% } else { %>
+            <div class="welcome-banner">
+                <h2>Welcome to Blog It!</h2>
+                <p class="lead">Discover amazing content from our community</p>
+                <div>
+                    <a href="/login" class="btn btn-light me-2">Login</a>
+                    <a href="/register" class="btn btn-outline-light">Register</a>
+                </div>
+            </div>
+        <% } %>
+        
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <h3>Latest Posts</h3>
+            </div>
+            <div class="col-md-6 text-end">
+                <div class="input-group">
+                    <input type="text" class="form-control" id="searchInput" placeholder="Search blogs...">
+                    <button class="btn btn-outline-secondary" type="button" id="searchBtn">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <% if (blogs.length > 0) { %>
+            <div class="row" id="blogContainer">
+                <% blogs.forEach(blog => { %>
+                  <div class="col-lg-4 col-md-6 mb-4 blog-item" 
+                  data-title="<%= blog.title.toLowerCase() %>"
+                  data-author="<%= blog.createdBy && blog.createdBy.name ? blog.createdBy.name.toLowerCase() : 'anonymous' %>">
+                 <div class="card blog-card h-100">
+                     <% if (blog.coverImageUrl) { %>
+                         <img src="<%= blog.coverImageUrl %>" class="card-img-top" alt="<%= blog.title %>">
+                     <% } else { %>
+                         <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center">
+                             <i class="fas fa-image fa-5x text-white"></i>
+                         </div>
+                     <% } %>
+                     
+                     <div class="author-badge">
+                         <i class="fas fa-user"></i> 
+                         <%= blog.createdBy && blog.createdBy.name ? blog.createdBy.name : 'Anonymous' %>
+                     </div>
+                     
+                     <div class="card-body">
+                         <h5 class="card-title"><%= blog.title %></h5>
+                         <div class="card-text truncate-text">
+                             <%= blog.body %>
+                         </div>
+                     </div>
+                     
+                     <div class="card-footer bg-transparent">
+                         <small class="text-muted">
+                             Posted <%= new Date(blog.createdAt).toLocaleDateString() %>
+                         </small>
+                         <a href="/blog/<%= blog._id %>" class="btn btn-sm btn-primary float-end">Read More</a>
+                     </div>
+                 </div>
+             </div>
+                <% }); %>
+            </div>
+        <% } else { %>
+            <div class="empty-state">
+                <i class="fas fa-book-open"></i>
+                <h3>No Blogs Yet</h3>
+                <p>Be the first to create a blog post!</p>
+                <% if (locals.user) { %>
+                    <a href="/add-blog" class="btn btn-primary">Create Your First Blog</a>
+                <% } else { %>
+                    <a href="/register" class="btn btn-primary">Join Now to Create Blogs</a>
+                <% } %>
+            </div>
+        <% } %>
+    </div>
+      
+    <%- include('./partials/scripts') %>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Search functionality
+            const searchInput = document.getElementById('searchInput');
+            const searchBtn = document.getElementById('searchBtn');
+            const blogItems = document.querySelectorAll('.blog-item');
+            
+            function filterBlogs() {
+                const searchTerm = searchInput.value.toLowerCase();
+                
+                blogItems.forEach(item => {
+                    const title = item.getAttribute('data-title');
+                    const author = item.getAttribute('data-author');
+                    
+                    if (title.includes(searchTerm) || author.includes(searchTerm)) {
+                        item.style.display = 'block';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+            }
+            
+            searchInput.addEventListener('input', filterBlogs);
+            searchBtn.addEventListener('click', filterBlogs);
+            
+            // Add click animation to blog cards
+            document.querySelectorAll('.blog-card').forEach(card => {
+                card.addEventListener('click', function(e) {
+                    // Don't redirect if clicking on links/buttons inside the card
+                    if (!e.target.closest('a, button')) {
+                        const link = this.querySelector('a[href^="/blog/"]');
+                        if (link) {
+                            window.location.href = link.href;
+                        }
+                    }
+                });
+            });
+            
+            // Initialize tooltips
+            const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+        });
+    </script>
+</body>
+</html>

@@ -18,9 +18,12 @@ const blogSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: 'User', 
         required: true,
-    }, 
+    },
+    comments: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Comment'
+    }]
 }, {timestamps: true});
 
-const Blog = model("Blog", blogSchema); // Changed to uppercase "Blog" for consistency
-
+const Blog = model("Blog", blogSchema);
 export default Blog;

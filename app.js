@@ -50,6 +50,22 @@ app.get('/', async(req, res) => {
 app.use('/user', userRoute);
 app.use('/blog', blogRoute)
 
+// Add this after all your routes
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).render('error', {
+        error: {
+            message: err.message || 'Something went wrong!',
+            status: 500
+        }
+    });
+});
+
+// 404 handler (should be last route)
+app.use((req, res) => {
+    res.status(404).render('404');
+});
+
 // Connect to MongoDB
 mongoose
   .connect(process.env.MONGO_URI)
